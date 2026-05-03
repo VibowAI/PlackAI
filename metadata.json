@@ -1,0 +1,6 @@
+{
+  "name": "Lack Chat",
+  "description": "A modern AI chat application with multi-model support and secure Supabase integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
