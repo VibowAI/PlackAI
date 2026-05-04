@@ -314,6 +314,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const generateChatTitle = async (chatId: string, firstUserMsg: string) => {
     try {
+<<<<<<< HEAD
       const prompt = `Generate a short title (max 5 words) for this conversation:\n${firstUserMsg}`;
       
       const response = await fetch('/.netlify/functions/gemini', {
@@ -326,6 +327,18 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
       
       let newTitle = data.response?.trim()?.replace(/["*]/g, '') || firstUserMsg.slice(0, 30) + '...';
+=======
+      const ai = new GoogleGenAI({ apiKey: process.env.MY_GEMINI_API_KEY || '' });
+      const prompt = `Generate a short title (max 5 words) for this conversation:
+${firstUserMsg}`;
+      
+      const result = await ai.models.generateContent({
+        model: AIModel.LACK_3_5,
+        contents: prompt
+      });
+      
+      let newTitle = result.text?.trim()?.replace(/["*]/g, '') || firstUserMsg.slice(0, 30) + '...';
+>>>>>>> d03fe133024be3ce9a38b07fce8d33278361eff9
       if (newTitle.length > 50) newTitle = newTitle.slice(0, 50) + '...';
 
       setChats(prev => prev.map(c => c.id === chatId ? { ...c, title: newTitle } : c));
@@ -347,9 +360,17 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // AI Response logic
     try {
       setLoading(true);
+<<<<<<< HEAD
       setIsStreaming(true); // Still true so UI knows we are fetching
       abortControllerRef.current = new AbortController();
       
+=======
+      setIsStreaming(true);
+      abortControllerRef.current = new AbortController();
+      
+      const ai = new GoogleGenAI({ apiKey: process.env.MY_GEMINI_API_KEY || '' });
+      
+>>>>>>> d03fe133024be3ce9a38b07fce8d33278361eff9
       const prompt = isLearnMode 
         ? `Explain this in a structured, step-by-step educational format: ${content}`
         : content;
@@ -405,6 +426,17 @@ Provide your final, clean answer here.
 Do NOT omit any of the tags (<plan>, </plan>, <execution>, </execution>, <answer>, </answer>). Always adhere strictly to this structure.`;
       }
 
+<<<<<<< HEAD
+=======
+      const result = await ai.models.generateContentStream({
+        model: effectiveModel,
+        contents: allContents as any,
+        config: Object.keys(generateConfig).length > 0 ? generateConfig : undefined
+      });
+
+      let aiResponseContent = '';
+      let searchSourcesAppended = false;
+>>>>>>> d03fe133024be3ce9a38b07fce8d33278361eff9
       const aiMessageId = existingAiMessageId || `ai_${Date.now()}`;
       let isAborted = false;
       
@@ -440,6 +472,7 @@ Do NOT omit any of the tags (<plan>, </plan>, <execution>, </execution>, <answer
         }];
       });
 
+<<<<<<< HEAD
       let aiResponseContent = '';
       try {
         const response = await fetch('/.netlify/functions/gemini', {
@@ -503,6 +536,64 @@ Do NOT omit any of the tags (<plan>, </plan>, <execution>, </execution>, <answer
           return m;
         }));
 
+=======
+      try {
+        for await (const chunk of result) {
+          if (abortControllerRef.current?.signal.aborted) {
+            isAborted = true;
+            break; // Stop processing stream
+          }
+          const chunkText = chunk.text || '';
+          aiResponseContent += chunkText;
+
+          if (isSearchMode && !searchSourcesAppended) {
+            const groundingMetadata = chunk.candidates?.[0]?.groundingMetadata;
+            const chunks = groundingMetadata?.groundingChunks;
+            
+            if (chunks && chunks.length > 0) {
+              const webSources = chunks.map(c => c.web).filter(Boolean);
+              if (webSources.length > 0) {
+                const uniqueUris = Array.from(new Set(webSources.map(w => w?.uri)));
+                const uniqueSources = uniqueUris.map(uri => webSources.find(w => w?.uri === uri));
+                
+                const sourcesMarkdown = `\n\n### Sources:\n` + uniqueSources.map(source => {
+                  let url;
+                  try {
+                    // Resolve redirects if possible, or just extract domain
+                    const uri = source!.uri!;
+                    url = new URL(uri);
+                    
+                    // Handle Vertex AI redirect urls if they contain the real destination as a param
+                    if (url.hostname.includes('vertexaisearch') || url.hostname.includes('google.com')) {
+                      const realUrl = url.searchParams.get('url') || url.searchParams.get('q');
+                      if (realUrl) url = new URL(realUrl);
+                    }
+                  } catch(e) {
+                    return '';
+                  }
+                  
+                  return `- [${url.hostname.replace('www.', '')}](${url.href})`;
+                }).filter(Boolean).join('\n');
+                
+                aiResponseContent += sourcesMarkdown;
+                searchSourcesAppended = true;
+              }
+            }
+          }
+
+          setMessages(prev => prev.map(m => {
+            if (m.id === aiMessageId) {
+              const updatedVersions = m.versions ? [...m.versions] : [{content: '', model_used: m.model_used}];
+              const currentIdx = m.current_version ?? 0;
+              if (updatedVersions[currentIdx]) {
+                 updatedVersions[currentIdx].content = aiResponseContent;
+              }
+              return { ...m, content: aiResponseContent, versions: updatedVersions };
+            }
+            return m;
+          }));
+        }
+>>>>>>> d03fe133024be3ce9a38b07fce8d33278361eff9
       } catch (streamError: any) {
         if (streamError.name === 'AbortError' || abortControllerRef.current?.signal.aborted) {
           isAborted = true;
@@ -526,6 +617,14 @@ Do NOT omit any of the tags (<plan>, </plan>, <execution>, </execution>, <answer
 
       // Save AI message and update chat title if needed
       if (!isGuest && (!existingAiMessageId || isAborted)) {
+<<<<<<< HEAD
+=======
+        // First determine what to do with the AI response in DB.
+        // Wait, how do we store versions in Supabase? We only store the latest content?
+        // Since Supabase doesn't have a versions column easily accessible without migration, we can either:
+        // 1. just update the assistant message content
+        // 2. insert a new message?
+>>>>>>> d03fe133024be3ce9a38b07fce8d33278361eff9
         if (existingAiMessageId) {
            await supabase.from('messages').update({
               content: aiResponseContent,
@@ -542,6 +641,10 @@ Do NOT omit any of the tags (<plan>, </plan>, <execution>, </execution>, <answer
           }]);
         }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> d03fe133024be3ce9a38b07fce8d33278361eff9
         // Touch updated_at for the chat
         await supabase.from('chats').update({ updated_at: new Date().toISOString() }).eq('id', activeChatId);
       }

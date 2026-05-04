@@ -33,7 +33,10 @@
     "vite": "^6.2.3"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@netlify/functions": "^5.2.0",
+=======
+>>>>>>> d03fe133024be3ce9a38b07fce8d33278361eff9
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",

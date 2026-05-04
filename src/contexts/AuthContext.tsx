@@ -119,13 +119,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!session) return false;
 
     try {
+<<<<<<< HEAD
       const response = await fetch('/.netlify/functions/delete-user', {
+=======
+      const response = await fetch('/api/user/delete', {
+>>>>>>> d03fe133024be3ce9a38b07fce8d33278361eff9
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
+<<<<<<< HEAD
         },
         body: JSON.stringify({ token: session.access_token, confirm: true })
+=======
+        }
+>>>>>>> d03fe133024be3ce9a38b07fce8d33278361eff9
       });
 
       if (response.ok) {
