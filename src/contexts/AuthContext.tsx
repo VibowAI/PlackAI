@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           supabase.auth.signOut();
         }
       }
-      
+
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
-      
+
       if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
@@ -80,15 +80,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               .insert([{ id }])
               .select()
               .single();
-            
+
             if (createError) throw createError;
-            
+
             const localAvatar = localStorage.getItem(`avatar_${id}`);
             setProfile({ ...newProfile, image_url: localAvatar || newProfile.image_url });
           }
         } else {
           console.error('Error fetching profile:', error);
-          throw error; // Re-throw to be caught by the catch block
+          throw error;
         }
       } else {
         // Source of truth: database
@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (err) {
       console.error('Error in fetchProfile:', err);
-      setProfile(null); // Explicitly ensure profile is null on failure
+      setProfile(null);
     } finally {
       setLoading(false);
     }
@@ -119,21 +119,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!session) return false;
 
     try {
-<<<<<<< HEAD
       const response = await fetch('/.netlify/functions/delete-user', {
-=======
-      const response = await fetch('/api/user/delete', {
->>>>>>> d03fe133024be3ce9a38b07fce8d33278361eff9
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
-<<<<<<< HEAD
         },
-        body: JSON.stringify({ token: session.access_token, confirm: true })
-=======
-        }
->>>>>>> d03fe133024be3ce9a38b07fce8d33278361eff9
+        body: JSON.stringify({ confirm: true })
       });
 
       if (response.ok) {
@@ -143,6 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Account deletion error:', err);
     }
+
     return false;
   };
 
@@ -152,15 +145,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const saveAvatar = async (avatarUrl: string) => {
     if (!user) return;
-    
-    // Save to localStorage as a fallback/optimistic update
+
     try {
       localStorage.setItem(`avatar_${user.id}`, avatarUrl);
     } catch (e) {
       console.warn('Could not save avatar to localStorage (quota exceeded?):', e);
     }
-    
-    // We update image_url in the profiles table
+
     const { error } = await supabase
       .from('profiles')
       .update({ image_url: avatarUrl })
@@ -193,7 +184,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isGuest, signOut, enterGuestMode, deleteAccount, updateProfile, saveAvatar, resetPassword, isDevMode, toggleDevMode }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        isGuest,
+        signOut,
+        enterGuestMode,
+        deleteAccount,
+        updateProfile,
+        saveAvatar,
+        resetPassword,
+        isDevMode,
+        toggleDevMode
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
