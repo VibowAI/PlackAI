@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #111111;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+}
+
+.dark {
+  --background: #0f1117;
+  --foreground: #ffffff;
+  --muted: #1a1d24;
+  --muted-foreground: #94a3b8;
+  --border: rgba(255, 255, 255, 0.08);
+  --popover: #0f1117;
+  --popover-foreground: #ffffff;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-x: hidden;
+}
+
+@layer utilities {
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800;
+  }
+  .animate-pulse-slow {
+    animation: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.6; transform: scale(1.1); }
+  50% { opacity: 0.8; transform: scale(1.15); }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors;
+}
