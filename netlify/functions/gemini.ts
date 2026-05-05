@@ -147,9 +147,17 @@ export const handler: Handler = stream(async (event, context) => {
 
     console.log(`[${timestamp}] [${requestId}] IP: ${ip} | Model: ${model} | Stream: ${isStream} | Prompt hash: ${promptHash.slice(0,8)} | Length: ${prompt.length}`);
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.MY_GEMINI_API_KEY;
     if (!apiKey) {
-      console.error(`[${timestamp}] [${requestId}] GEMINI_API_KEY is not configured`);
+      console.error(`[${timestamp}] [${requestId}] MY_GEMINI_API_KEY is not configured`);
+      return {
+        statusCode: 500,
+        headers: corsHeaders,
+        body: JSON.stringify({ success: false, error: "Server configuration missing", requestId, timestamp }),
+      };
+    };
+    if (!apiKey) {
+      console.error(`[${timestamp}] [${requestId}] MY_GEMINI_API_KEY is not configured`);
       return {
         statusCode: 500,
         headers: corsHeaders,
